@@ -137,30 +137,6 @@ to improve retrieval diversity and reduce repetitive chunks.
 
 ---
 
-# Supported YouTube Formats
-
-- Standard YouTube URLs
-- Shorts URLs
-- Embed URLs
-- Raw Video IDs
-
-Examples:
-
-```text
-https://www.youtube.com/watch?v=VIDEO_ID
-
-https://youtu.be/VIDEO_ID
-
-VIDEO_ID
-```
-
----
-
-# Screenshots
-
-Add your screenshots here later.
-
----
 
 # Deployment
 
