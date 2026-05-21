@@ -51,6 +51,7 @@ def extract_video_id(value: str) -> str | None:
 
 def fetch_transcript_for_video(video_id: str):
     ytt_api = YouTubeTranscriptApi()
+    last_error = None
 
     # Prefer English, then Hindi, then any available transcript.
     for lang_code, lang_name in [("en", "English"), ("hi", "Hindi")]:
@@ -59,16 +60,19 @@ def fetch_transcript_for_video(video_id: str):
             text = " ".join(chunk.text for chunk in data)
             if text.strip():
                 return text, lang_name
-        except Exception:
-            pass
+        except Exception as exc:
+            last_error = exc
 
     try:
         data = ytt_api.fetch(video_id)
         text = " ".join(chunk.text for chunk in data)
         if text.strip():
             return text, "Auto"
-    except Exception:
-        pass
+    except Exception as exc:
+        last_error = exc
+
+    if last_error is not None:
+        raise TranscriptsDisabled("No transcripts available for this video.") from last_error
 
     raise TranscriptsDisabled("No transcripts available for this video.")
 
@@ -122,8 +126,10 @@ if st.sidebar.button("Load Video & Build RAG", key="load_video"):
     with st.spinner("Fetching transcript..."):
         try:
             transcript, language_used = fetch_transcript_for_video(video_id)
-        except TranscriptsDisabled:
+        except TranscriptsDisabled as exc:
             st.error("No captions available for this video.")
+            if exc.__cause__ is not None:
+                st.caption(f"Underlying transcript error: {type(exc.__cause__).__name__}: {exc.__cause__}")
             st.stop()
         except Exception as e:
             st.error(f"Error fetching transcript: {e}")
